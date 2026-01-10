@@ -50,18 +50,33 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
     exit 1
 fi
 
+# Check if origin remote exists
+if ! git remote get-url origin > /dev/null 2>&1; then
+    echo -e "${RED}Error: 'origin' remote not found${NC}"
+    exit 1
+fi
+
 # Get all remote branches directly from origin
 echo "Fetching remote branch list..."
-all_remote_branches=$(git ls-remote --heads origin | awk '{print $2}' | sed 's|refs/heads/||')
+all_remote_branches=$(git ls-remote --heads origin 2>&1)
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Error: Failed to fetch remote branches from origin${NC}"
+    exit 1
+fi
+
+# Extract branch names
+all_remote_branches=$(echo "$all_remote_branches" | awk '{gsub(/^refs\/heads\//, "", $2); print $2}')
 
 echo ""
 echo -e "${YELLOW}Protected branch: ${PROTECTED_BRANCH}${NC}"
 echo ""
 
 # Filter out the protected branch and store in array
-mapfile -t branches_array < <(echo "$all_remote_branches" | grep -v "^${PROTECTED_BRANCH}$" || true)
+mapfile -t branches_array < <(echo "$all_remote_branches" | grep -v "^${PROTECTED_BRANCH}$" | grep -v "^$" || true)
 
-if [ ${#branches_array[@]} -eq 0 ]; then
+# Check if array has any non-empty elements
+if [ ${#branches_array[@]} -eq 0 ] || { [ ${#branches_array[@]} -eq 1 ] && [ -z "${branches_array[0]}" ]; }; then
     echo -e "${GREEN}No branches to delete. Only '${PROTECTED_BRANCH}' exists.${NC}"
     exit 0
 fi
