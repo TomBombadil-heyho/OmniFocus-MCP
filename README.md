@@ -241,6 +241,20 @@ Note: This tool returns the content of the current perspective window. Due to Om
 
 Documentation to follow.
 
+## Repository Maintenance
+
+The repository includes maintenance scripts in the `scripts/` directory:
+
+- **`delete-non-main-branches.sh`** - Safely delete all remote branches except `main`. See [scripts/README.md](scripts/README.md) for details.
+
+  ```bash
+  # See what would be deleted (dry run)
+  ./scripts/delete-non-main-branches.sh --dry-run
+  
+  # Actually delete the branches
+  ./scripts/delete-non-main-branches.sh
+  ```
+
 ## How It Works
 
 This server uses AppleScript to communicate with OmniFocus, allowing it to interact with the application's native functionality. The server is built using the Model Context Protocol SDK, which provides a standardized way for AI models to interact with external tools and systems.
