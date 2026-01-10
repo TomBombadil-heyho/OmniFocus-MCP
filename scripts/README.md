@@ -41,7 +41,7 @@ A safe script to delete all remote branches except `main`.
 Branch Cleanup Script
 ================================
 
-Fetching latest remote information...
+Fetching remote branch list...
 
 Protected branch: main
 

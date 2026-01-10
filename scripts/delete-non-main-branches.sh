@@ -58,10 +58,10 @@ echo ""
 echo -e "${YELLOW}Protected branch: ${PROTECTED_BRANCH}${NC}"
 echo ""
 
-# Filter out the protected branch
-branches_to_delete=$(echo "$all_remote_branches" | grep -v "^${PROTECTED_BRANCH}$" | xargs)
+# Filter out the protected branch and store in array
+mapfile -t branches_array < <(echo "$all_remote_branches" | grep -v "^${PROTECTED_BRANCH}$" || true)
 
-if [ -z "$branches_to_delete" ]; then
+if [ ${#branches_array[@]} -eq 0 ]; then
     echo -e "${GREEN}No branches to delete. Only '${PROTECTED_BRANCH}' exists.${NC}"
     exit 0
 fi
@@ -69,13 +69,13 @@ fi
 # Display branches that will be deleted
 echo "The following branches will be deleted:"
 echo "========================================"
-for branch in $branches_to_delete; do
+for branch in "${branches_array[@]}"; do
     echo -e "  ${RED}✗${NC} $branch"
 done
 echo ""
 
 # Count branches
-branch_count=$(echo "$branches_to_delete" | wc -w | xargs)
+branch_count=${#branches_array[@]}
 echo "Total branches to delete: $branch_count"
 echo ""
 
@@ -102,9 +102,9 @@ echo "===================="
 deleted_count=0
 failed_count=0
 
-for branch in $branches_to_delete; do
+for branch in "${branches_array[@]}"; do
     echo -n "Deleting $branch... "
-    if git push origin --delete "$branch" 2>&1; then
+    if git push origin --delete "$branch" > /dev/null 2>&1; then
         echo -e "${GREEN}✓${NC}"
         deleted_count=$((deleted_count + 1))
     else
